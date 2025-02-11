@@ -170,32 +170,31 @@ namespace Json.Controllers
                     }
                 }
 
-
-
-
-
-                // Buscar Relaciones entre Clases
-                foreach (var prop in model.Properties)
+                // Añadir relaciones de herencia
+                foreach (var clase in model.Classes)
                 {
-                    var origen = prop.Domain;
-                    var destino = prop.Range;
-
-                    // Verificar si el origen y el destino son clases (no tipos de datos)
-                    if (IsClass(origen) && IsClass(destino))
+                    if (allSubclasses.ContainsKey(clase.ClassName))
                     {
-                        // Aquí tienes una relación entre clases
-                        Console.WriteLine($"Relación encontrada: {prop.PropertyName}");
-                        Console.WriteLine($"Dominio (origen): {origen}");
-                        Console.WriteLine($"Rango (destino): {destino}");
+                        // Si la clase tiene subclases, imprimir la relación de herencia
+                        foreach (var subClase in allSubclasses[clase.ClassName])
+                        {
+                            // Aquí se muestra la relación de herencia entre la clase base y la subclase
+                            Console.WriteLine($"La clase {subClase} hereda de {clase.ClassName}");
+
+                            model.Relationships.Add(new OwlRelationship
+                            {
+                                Type = OwlRelationshipType.Herencia,
+                                Destination = clase.ClassName,
+                                Source = subClase
+                            });
+                        }
                     }
                 }
 
-                // Método para verificar si un valor es una clase (no un tipo de datos)
-                bool IsClass(string value)
-                {
-                    // Compara si el valor es una URI que corresponde a una clase (no es un tipo de datos)
-                    return !value.StartsWith("http://www.w3.org/2001/XMLSchema#");
-                }
+                // Añadir resto de asociaciones
+
+
+
             }
 
             return model;

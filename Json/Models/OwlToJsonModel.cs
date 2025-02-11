@@ -1,4 +1,7 @@
-﻿namespace Json.Models
+﻿using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+
+namespace Json.Models
 {
     public class OwlToJsonModel
     {
@@ -63,7 +66,7 @@
         /// <summary>
         /// Sujeto de la relación (generalmente una clase o propiedad)
         /// </summary>
-        public string Subject { get; set; }
+        public string Source { get; set; }
 
         /// <summary>
         /// Predicado de la relación (nombre de la propiedad que conecta las entidades)
@@ -73,6 +76,14 @@
         /// <summary>
         /// Objeto de la relación (generalmente una clase o propiedad relacionada)
         /// </summary>
-        public string Object { get; set; }
+        public string Destination { get; set; }
+
+        /// <summary>
+        /// Tipo de la relación
+        /// </summary>
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public OwlRelationshipType Type { get; set; }
     }
+
+    public enum OwlRelationshipType { [EnumMember(Value ="Herencia")] Herencia, [EnumMember(Value ="Asociacion")] Asociacion }
 }
