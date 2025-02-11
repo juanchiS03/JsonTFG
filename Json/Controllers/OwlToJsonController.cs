@@ -1,7 +1,6 @@
 ﻿using Json.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace Json.Controllers
@@ -133,30 +132,36 @@ namespace Json.Controllers
                     }
                 }
 
+                // Crear un diccionario para buscar rápidamente las propiedades por 'onProperty'
+                var propertiesByName = model.Properties.ToDictionary(p => p.PropertyName);
 
                 // Añadir restricciones
                 foreach (var restrictionElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Restriction"))
                 {
                     var nodeID = restrictionElement.Attribute(rdf + "nodeID")?.Value;
-                    var cardinality = restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "cardinality")?.Value
-                                      ?? restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "maxCardinality")?.Value
-                                      ?? restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "minCardinality")?.Value;
-                    var onProperty = restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "onProperty")?.Attribute(rdf + "resource")?.Value;
 
-                    // Verificar si la propiedad y el dominio coinciden
-                    foreach (var prop in model.Properties)
+                    // Almacenar los elementos de cardinalidad en una sola pasada
+                    var cardinalityElement = restrictionElement.Elements()
+                        .FirstOrDefault(e => e.Name.LocalName == "cardinality") ??
+                        restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "maxCardinality") ??
+                        restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "minCardinality");
+
+                    var cardinality = cardinalityElement?.Value;
+                    var onProperty = restrictionElement.Elements()
+                        .FirstOrDefault(e => e.Name.LocalName == "onProperty")?.Attribute(rdf + "resource")?.Value;
+
+                    // Verificar si la propiedad existe y si el dominio de la propiedad coincide con el nodeID
+                    if (onProperty != null && propertiesByName.TryGetValue(onProperty, out var prop))
                     {
-                        if (prop.PropertyName.Equals(onProperty))
+                        // Verificar si el dominio de la propiedad es una subclase de nodeID o si el dominio es igual a nodeID
+                        if ((allSubclasses.ContainsKey(nodeID) && allSubclasses[nodeID].Contains(prop.Domain)) || prop.Domain.Equals(nodeID))
                         {
-                            // Verificar si el dominio de la propiedad es una subclase de nodeID o si el dominio es igual a nodeID
-                            if (allSubclasses.ContainsKey(nodeID) && allSubclasses[nodeID].Contains(prop.Domain) || prop.Domain.Equals(nodeID))
-                            {
-                                prop.Cardinality = cardinality; // Asignar la cardinalidad
-                            }
+                            prop.Cardinality = cardinality; // Asignar la cardinalidad
                         }
                     }
                 }
 
+                // Asignar '*' a las propiedades sin cardinalidad
                 foreach (var prop in model.Properties)
                 {
                     if (string.IsNullOrEmpty(prop.Cardinality))
@@ -167,26 +172,29 @@ namespace Json.Controllers
 
 
 
+
+
                 // Buscar Relaciones entre Clases
-                foreach (var relationElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Description"))
+                foreach (var prop in model.Properties)
                 {
-                    var subject = relationElement.Attribute(rdf + "about")?.Value;
+                    var origen = prop.Domain;
+                    var destino = prop.Range;
 
-                    if (!string.IsNullOrEmpty(subject))
+                    // Verificar si el origen y el destino son clases (no tipos de datos)
+                    if (IsClass(origen) && IsClass(destino))
                     {
-                        foreach (var property in relationElement.Elements().Where(e => !string.IsNullOrEmpty(e.Attribute(rdf + "resource")?.Value)))
-                        {
-                            var predicate = property.Name.LocalName;
-                            var obj = property.Attribute(rdf + "resource")?.Value;
-
-                            model.Relationships.Add(new OwlRelationship
-                            {
-                                Subject = subject,
-                                Predicate = predicate,
-                                Object = obj
-                            });
-                        }
+                        // Aquí tienes una relación entre clases
+                        Console.WriteLine($"Relación encontrada: {prop.PropertyName}");
+                        Console.WriteLine($"Dominio (origen): {origen}");
+                        Console.WriteLine($"Rango (destino): {destino}");
                     }
+                }
+
+                // Método para verificar si un valor es una clase (no un tipo de datos)
+                bool IsClass(string value)
+                {
+                    // Compara si el valor es una URI que corresponde a una clase (no es un tipo de datos)
+                    return !value.StartsWith("http://www.w3.org/2001/XMLSchema#");
                 }
             }
 

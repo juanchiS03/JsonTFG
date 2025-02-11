@@ -14,43 +14,65 @@
 
     public class OwlClass
     {
-        // Nombre de la clase
+        /// <summary>
+        /// Nombre de la clase
+        /// </summary>
         public string ClassName { get; set; }
 
-        // Etiqueta de la clase, puede ser opcional
+        /// <summary>
+        /// Etiqueta de la clase, puede ser opcional
+        /// </summary>
         public string Label { get; set; } = null;
     }
 
     public class OwlProperty
     {
-        // Nombre de la propiedad
+        /// <summary>
+        /// Nombre de la propiedad
+        /// </summary>
         public string PropertyName { get; set; }
 
-        // Etiqueta de la propiedad, puede ser opcional
+        /// <summary>
+        /// Etiqueta de la propiedad, puede ser opcional
+        /// </summary>
         public string Label { get; set; } = null;
 
-        // Comentario de la propiedad, puede ser opcional
+        /// <summary>
+        /// Comentario de la propiedad, puede ser opcional
+        /// </summary>
         public string Comment { get; set; } = null;
 
-        // Dominio de la propiedad (la clase a la que pertenece)
+        /// <summary>
+        /// Dominio de la propiedad (la clase a la que pertenece)
+        /// </summary>
         public string Domain { get; set; }
 
-        // Rango de la propiedad (el tipo de la propiedad)
+        /// <summary>
+        /// Rango de la propiedad (el tipo de la propiedad)
+        /// </summary>
         public string Range { get; set; }
 
-        // Cardinalidad de la propiedad
+        /// <summary>
+        /// Cardinalidad de la propiedad
+        /// </summary>
         public string Cardinality { get; set; }
     }
 
     public class OwlRelationship
     {
-        // Sujeto de la relación (generalmente una clase o propiedad)
+        /// <summary>
+        /// Sujeto de la relación (generalmente una clase o propiedad)
+        /// </summary>
         public string Subject { get; set; }
 
-        // Predicado de la relación (nombre de la propiedad que conecta las entidades)
+        /// <summary>
+        /// Predicado de la relación (nombre de la propiedad que conecta las entidades)
+        /// </summary>
         public string Predicate { get; set; }
 
-        // Objeto de la relación (generalmente una clase o propiedad relacionada)
+        /// <summary>
+        /// Objeto de la relación (generalmente una clase o propiedad relacionada)
+        /// </summary>
         public string Object { get; set; }
     }
 }
