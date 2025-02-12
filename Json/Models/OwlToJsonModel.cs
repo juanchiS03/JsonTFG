@@ -69,14 +69,14 @@ namespace Json.Models
         public string Source { get; set; }
 
         /// <summary>
-        /// Predicado de la relación (nombre de la propiedad que conecta las entidades)
-        /// </summary>
-        public string Predicate { get; set; }
-
-        /// <summary>
         /// Objeto de la relación (generalmente una clase o propiedad relacionada)
         /// </summary>
         public string Destination { get; set; }
+
+        /// <summary>
+        /// Predicado de la relación (nombre de la propiedad que conecta las entidades)
+        /// </summary>
+        public string Predicate { get; set; }
 
         /// <summary>
         /// Tipo de la relación

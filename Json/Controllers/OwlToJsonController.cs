@@ -132,10 +132,7 @@ namespace Json.Controllers
                     }
                 }
 
-                // Crear un diccionario para buscar rápidamente las propiedades por 'onProperty'
-                var propertiesByName = model.Properties.ToDictionary(p => p.PropertyName);
-
-                // Añadir restricciones
+                // Añadir restricciones directamente desde el modelo
                 foreach (var restrictionElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Restriction"))
                 {
                     var nodeID = restrictionElement.Attribute(rdf + "nodeID")?.Value;
@@ -150,16 +147,18 @@ namespace Json.Controllers
                     var onProperty = restrictionElement.Elements()
                         .FirstOrDefault(e => e.Name.LocalName == "onProperty")?.Attribute(rdf + "resource")?.Value;
 
-                    // Verificar si la propiedad existe y si el dominio de la propiedad coincide con el nodeID
-                    if (onProperty != null && propertiesByName.TryGetValue(onProperty, out var prop))
+                    // Si la propiedad está definida en el modelo
+                    var property = model.Properties.FirstOrDefault(p => p.PropertyName == onProperty);
+                    if (property != null)
                     {
-                        // Verificar si el dominio de la propiedad es una subclase de nodeID o si el dominio es igual a nodeID
-                        if ((allSubclasses.ContainsKey(nodeID) && allSubclasses[nodeID].Contains(prop.Domain)) || prop.Domain.Equals(nodeID))
+                        // Verificar si el dominio de la propiedad es una subclase o igual al nodeID
+                        if ((allSubclasses.ContainsKey(nodeID) && allSubclasses[nodeID].Contains(property.Domain)) || property.Domain.Equals(nodeID))
                         {
-                            prop.Cardinality = cardinality; // Asignar la cardinalidad
+                            property.Cardinality = cardinality; // Asignar la cardinalidad
                         }
                     }
                 }
+
 
                 // Asignar '*' a las propiedades sin cardinalidad
                 foreach (var prop in model.Properties)
@@ -175,12 +174,8 @@ namespace Json.Controllers
                 {
                     if (allSubclasses.ContainsKey(clase.ClassName))
                     {
-                        // Si la clase tiene subclases, imprimir la relación de herencia
                         foreach (var subClase in allSubclasses[clase.ClassName])
                         {
-                            // Aquí se muestra la relación de herencia entre la clase base y la subclase
-                            Console.WriteLine($"La clase {subClase} hereda de {clase.ClassName}");
-
                             model.Relationships.Add(new OwlRelationship
                             {
                                 Type = OwlRelationshipType.Herencia,
@@ -192,8 +187,31 @@ namespace Json.Controllers
                 }
 
                 // Añadir resto de asociaciones
+                foreach (var prop in model.Properties)
+                {
+                    var inic = prop.Domain;
+                    var fin = prop.Range;
 
+                    if (inic != null && fin != null)
+                    {
+                        if (IsClass(fin))
+                        {
+                            model.Relationships.Add(new OwlRelationship
+                            {
+                                Source = inic,
+                                Destination = fin,
+                                Predicate = prop.PropertyName,
+                                Type = OwlRelationshipType.Asociacion
+                            });
+                        }
+                    }
+                }
 
+                bool IsClass(string value)
+                {
+                    // Compara si el valor es una URI que corresponde a una clase (no es un tipo de datos)
+                    return !value.StartsWith("http://www.w3.org/2001/XMLSchema#");
+                }
 
             }
 
