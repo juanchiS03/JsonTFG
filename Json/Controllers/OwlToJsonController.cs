@@ -69,29 +69,6 @@ namespace Json.Controllers
                     }
                 }
 
-                // Buscar Propiedades
-                foreach (var propertyElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "DatatypeProperty" || e.Name.LocalName == "ObjectProperty" || e.Name.LocalName == "FunctionalProperty"))
-                {
-                    var propertyName = propertyElement.Attribute(rdf + "about")?.Value;
-                    var label = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "label")?.Value;
-                    var comment = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "comment")?.Value;
-                    var domain = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "domain")?.Attribute(rdf + "resource")?.Value ?? propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "domain")?.Attribute(rdf + "nodeID")?.Value;
-                    var range = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "range")?.Attribute(rdf + "resource")?.Value;
-
-
-                    if (!string.IsNullOrEmpty(propertyName))
-                    {
-                        model.Properties.Add(new OwlProperty
-                        {
-                            PropertyName = propertyName,
-                            Label = label,
-                            Comment = comment,
-                            Domain = domain,
-                            Range = range
-                        });
-                    }
-                }
-
                 // Buscar todas las subclases de una clase base
                 // Diccionario para almacenar las subclases de una clase base (por rdf:resource y nodeID)
                 var allSubclasses = new Dictionary<string, HashSet<string>>(); // Clase base -> Subclases
@@ -132,6 +109,79 @@ namespace Json.Controllers
                     }
                 }
 
+                // Buscar subclases en Description nodeID
+                foreach (var classAuto in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Description"))
+                {
+                    var nodeID = classAuto.Attribute(rdf + "nodeID")?.Value;
+                    if (nodeID != null)
+                    {
+                        var union = classAuto.Descendants().FirstOrDefault(e => e.Name.LocalName == "unionOf");
+                        if (union != null)
+                        {
+                            var firstElements = union.Descendants().Where(e => e.Name.LocalName == "first");
+
+                            foreach (var first in firstElements)
+                            {
+                                var resource = first.Attribute(rdf + "resource")?.Value;
+                                if (resource != null)
+                                {
+                                    if (!allSubclasses.ContainsKey(nodeID))
+                                    {
+                                        allSubclasses[nodeID] = new HashSet<string>();
+                                    }
+                                    allSubclasses[nodeID].Add(resource);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Buscar Propiedades
+                foreach (var propertyElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "DatatypeProperty" || e.Name.LocalName == "ObjectProperty" || e.Name.LocalName == "FunctionalProperty"))
+                {
+                    var propertyName = propertyElement.Attribute(rdf + "about")?.Value;
+                    var label = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "label")?.Value;
+                    var comment = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "comment")?.Value;
+                    var domain = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "domain")?.Attribute(rdf + "resource")?.Value ?? propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "domain")?.Attribute(rdf + "nodeID")?.Value;
+                    var range = propertyElement.Elements().FirstOrDefault(e => e.Name.LocalName == "range")?.Attribute(rdf + "resource")?.Value;
+
+                    if (domain.Contains("autos"))
+                    {
+                        if (allSubclasses.ContainsKey(domain))
+                        {
+                            var subClasses = allSubclasses.GetValueOrDefault(domain);
+                            foreach (var subClass in subClasses)
+                            {
+                                if (!string.IsNullOrEmpty(propertyName))
+                                {
+                                    model.Properties.Add(new OwlProperty
+                                    {
+                                        PropertyName = propertyName,
+                                        Label = label,
+                                        Comment = comment,
+                                        Domain = subClass,
+                                        Range = range
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(propertyName))
+                        {
+                            model.Properties.Add(new OwlProperty
+                            {
+                                PropertyName = propertyName,
+                                Label = label,
+                                Comment = comment,
+                                Domain = domain,
+                                Range = range
+                            });
+                        }
+                    }              
+                }
+
                 // Añadir restricciones directamente desde el modelo
                 foreach (var restrictionElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Restriction"))
                 {
@@ -139,11 +189,45 @@ namespace Json.Controllers
 
                     // Almacenar los elementos de cardinalidad en una sola pasada
                     var cardinalityElement = restrictionElement.Elements()
-                        .FirstOrDefault(e => e.Name.LocalName == "cardinality") ??
-                        restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "maxCardinality") ??
-                        restrictionElement.Elements().FirstOrDefault(e => e.Name.LocalName == "minCardinality");
+                        .FirstOrDefault(e => e.Name.LocalName == "cardinality");
 
-                    var cardinality = cardinalityElement?.Value;
+                    string cardinality = null;
+
+                    if (cardinalityElement != null)
+                    {
+                        // Si encontramos cardinalidad exacta, la usamos
+                        cardinality = cardinalityElement.Value;
+                    }
+                    else
+                    {
+                        // Si no hay cardinalidad exacta, buscamos min y max cardinality
+                        var minCardinalityElement = restrictionElement.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "minCardinality");
+                        var maxCardinalityElement = restrictionElement.Elements()
+                            .FirstOrDefault(e => e.Name.LocalName == "maxCardinality");
+
+                        if (minCardinalityElement != null && maxCardinalityElement != null)
+                        {
+                            // Si ambos existen, retornamos un rango
+                            cardinality = $"{minCardinalityElement.Value}..{maxCardinalityElement.Value}";
+                        }
+                        else if (minCardinalityElement != null)
+                        {
+                            // Si solo hay minCardinality, usamos el valor mínimo
+                            cardinality = $"{minCardinalityElement.Value}..*";  // * indica sin límite superior
+                        }
+                        else if (maxCardinalityElement != null)
+                        {
+                            // Si solo hay maxCardinality, usamos el valor máximo
+                            cardinality = $"0..{maxCardinalityElement.Value}";
+                        }
+                        else
+                        {
+                            // Si no hay ninguna cardinalidad definida
+                            cardinality = "*";
+                        }
+                    }
+
                     var onProperty = restrictionElement.Elements()
                         .FirstOrDefault(e => e.Name.LocalName == "onProperty")?.Attribute(rdf + "resource")?.Value;
 
@@ -158,7 +242,6 @@ namespace Json.Controllers
                         }
                     }
                 }
-
 
                 // Asignar '*' a las propiedades sin cardinalidad
                 foreach (var prop in model.Properties)
@@ -217,6 +300,5 @@ namespace Json.Controllers
 
             return model;
         }
-
     }
 }
