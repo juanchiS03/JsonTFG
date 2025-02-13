@@ -24,8 +24,14 @@ namespace Json.Controllers
             // Convertir el modelo a JSON
             var json = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
-            // Devolver el JSON como una respuesta
+            // Devolver el JSON
             return Content(json, "application/json");
+
+            // Guardar el JSON en TempData
+            //TempData["jsonData"] = json;
+
+            // Redirigir a la vista para mostrar el diagrama
+            //return RedirectToAction("VistaGraf", "Uml");
         }
 
         private OwlToJsonModel ProcessOwlFile(IFormFile owlFile)
@@ -93,7 +99,7 @@ namespace Json.Controllers
                                 {
                                     allSubclasses[resource] = new HashSet<string>();
                                 }
-                                allSubclasses[resource].Add(className); // Agregar la subclase
+                                allSubclasses[resource].Add(className);
                             }
 
                             // Si tiene un nodeID, es una subclase identificada de forma local
@@ -103,7 +109,7 @@ namespace Json.Controllers
                                 {
                                     allSubclasses[nodeID] = new HashSet<string>();
                                 }
-                                allSubclasses[nodeID].Add(className); // Agregar la subclase
+                                allSubclasses[nodeID].Add(className);
                             }
                         }
                     }
@@ -187,7 +193,6 @@ namespace Json.Controllers
                 {
                     var nodeID = restrictionElement.Attribute(rdf + "nodeID")?.Value;
 
-                    // Almacenar los elementos de cardinalidad en una sola pasada
                     var cardinalityElement = restrictionElement.Elements()
                         .FirstOrDefault(e => e.Name.LocalName == "cardinality");
 
@@ -195,7 +200,6 @@ namespace Json.Controllers
 
                     if (cardinalityElement != null)
                     {
-                        // Si encontramos cardinalidad exacta, la usamos
                         cardinality = cardinalityElement.Value;
                     }
                     else
@@ -213,12 +217,10 @@ namespace Json.Controllers
                         }
                         else if (minCardinalityElement != null)
                         {
-                            // Si solo hay minCardinality, usamos el valor mínimo
-                            cardinality = $"{minCardinalityElement.Value}..*";  // * indica sin límite superior
+                            cardinality = $"{minCardinalityElement.Value}..*"; 
                         }
                         else if (maxCardinalityElement != null)
                         {
-                            // Si solo hay maxCardinality, usamos el valor máximo
                             cardinality = $"0..{maxCardinalityElement.Value}";
                         }
                         else
@@ -231,7 +233,6 @@ namespace Json.Controllers
                     var onProperty = restrictionElement.Elements()
                         .FirstOrDefault(e => e.Name.LocalName == "onProperty")?.Attribute(rdf + "resource")?.Value;
 
-                    // Si la propiedad está definida en el modelo
                     var property = model.Properties.FirstOrDefault(p => p.PropertyName == onProperty);
                     if (property != null)
                     {

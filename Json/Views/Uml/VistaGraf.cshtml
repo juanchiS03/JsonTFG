@@ -1,0 +1,32 @@
+﻿@{
+    // var jsonData = TempData["jsonData"] as string;
+}
+
+@* @if (!string.IsNullOrEmpty(jsonData))
+{
+    <script>
+        var jsonData = @Html.Raw(jsonData);
+    </script>
+} *@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/gojs@3.0.19/release/go.js"></script>
+    <script src="/js/Diagrama.js"></script>
+</head>
+<body>
+    <h2>Diagrama</h2>
+    <div id="myDiagramDiv" style="width: 800px; height: 600px; border: 1px solid black;"></div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/gojs@3.0.19/release/go.js"></script>
+    <!-- Aquí incluimos tu archivo JS externo -->
+    <script src="/js/Diagrama.js"></script>
+</body>
+</html>
+
+
+
+
