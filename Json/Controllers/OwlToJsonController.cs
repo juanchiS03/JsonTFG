@@ -25,13 +25,13 @@ namespace Json.Controllers
             var json = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
             // Devolver el JSON
-            return Content(json, "application/json");
+            //return Content(json, "application/json");
 
             // Guardar el JSON en TempData
-            //TempData["jsonData"] = json;
+            TempData["jsonData"] = json;
 
             // Redirigir a la vista para mostrar el diagrama
-            //return RedirectToAction("VistaGraf", "Uml");
+            return RedirectToAction("VistaGraf", "Uml");
         }
 
         private OwlToJsonModel ProcessOwlFile(IFormFile owlFile)

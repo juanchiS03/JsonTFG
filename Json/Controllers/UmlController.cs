@@ -7,8 +7,14 @@ namespace Json.Controllers
     {
         public IActionResult VistaGraf()
         {
+            var jsonData = TempData["jsonData"] as string;
+            if (string.IsNullOrEmpty(jsonData))
+            {
+                return BadRequest("No data available.");
+            }
+
+            ViewBag.JsonData = jsonData;
             return View();
         }
-
     }
 }

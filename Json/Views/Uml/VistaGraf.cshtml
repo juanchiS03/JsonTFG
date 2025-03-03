@@ -1,32 +1,32 @@
-﻿@{
-    // var jsonData = TempData["jsonData"] as string;
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+		@ViewData["Title"]
+		var jsonData = ViewBag.JsonData;
 }
 
-@* @if (!string.IsNullOrEmpty(jsonData))
-{
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama UML con Mermaid</title>
+
+    <!-- Enlazando el archivo CSS -->
+    <link rel="stylesheet" href="~/css/Diagrama.css">
+
+    <!-- Enlazando el archivo JS -->
+    <script type="module" src="~/js/Diagrama.js"></script>
+</head>
+<body>
+
+    <h1>Diagrama UML con Mermaid</h1>
+    <div id="mermaid-container"></div>
+
     <script>
         var jsonData = @Html.Raw(jsonData);
     </script>
-} *@
 
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <script src="https://cdn.jsdelivr.net/npm/gojs@3.0.19/release/go.js"></script>
-    <script src="/js/Diagrama.js"></script>
-</head>
-<body>
-    <h2>Diagrama</h2>
-    <div id="myDiagramDiv" style="width: 800px; height: 600px; border: 1px solid black;"></div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/gojs@3.0.19/release/go.js"></script>
-    <!-- Aquí incluimos tu archivo JS externo -->
-    <script src="/js/Diagrama.js"></script>
 </body>
 </html>
-
-
-
-
