@@ -46,7 +46,7 @@ namespace Json.Controllers
                 var xmlDocument = XDocument.Parse(owlContent);
 
                 // Extraer namespaces de xmlns: en <rdf:RDF>
-                foreach (var attr in xmlDocument.Root.Attributes().Where(a => a.IsNamespaceDeclaration))
+                foreach (var attr in xmlDocument.Root.Attributes().Where(a => a.IsNamespaceDeclaration)) 
                 {
                     var prefix = attr.Name.LocalName;
                     var uri = attr.Value;
@@ -76,23 +76,20 @@ namespace Json.Controllers
                 }
 
                 // Buscar todas las subclases de una clase base
-                // Diccionario para almacenar las subclases de una clase base (por rdf:resource y nodeID)
-                var allSubclasses = new Dictionary<string, HashSet<string>>(); // Clase base -> Subclases
+                var allSubclasses = new Dictionary<string, HashSet<string>>();
 
-                // Buscar todas las clases y sus subclases (por rdf:resource y nodeID)
+                // Buscar todas las clases y sus subclases
                 foreach (var classElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Class"))
                 {
                     var className = classElement.Attribute(rdf + "about")?.Value;
 
                     if (!string.IsNullOrEmpty(className))
                     {
-                        // Buscar las subclases de esta clase en las relaciones rdfs:subClassOf
                         foreach (var subClassElement in classElement.Elements().Where(e => e.Name.LocalName == "subClassOf"))
                         {
-                            var resource = subClassElement.Attribute(rdf + "resource")?.Value; // Subclase por rdf:resource
-                            var nodeID = subClassElement.Attribute(rdf + "nodeID")?.Value;   // Subclase por nodeID
+                            var resource = subClassElement.Attribute(rdf + "resource")?.Value; 
+                            var nodeID = subClassElement.Attribute(rdf + "nodeID")?.Value; 
 
-                            // Si tiene un rdf:resource, es una subclase de la clase actual
                             if (!string.IsNullOrEmpty(resource))
                             {
                                 if (!allSubclasses.ContainsKey(resource))
@@ -102,7 +99,6 @@ namespace Json.Controllers
                                 allSubclasses[resource].Add(className);
                             }
 
-                            // Si tiene un nodeID, es una subclase identificada de forma local
                             if (!string.IsNullOrEmpty(nodeID))
                             {
                                 if (!allSubclasses.ContainsKey(nodeID))
@@ -188,7 +184,6 @@ namespace Json.Controllers
                     }              
                 }
 
-                // Añadir restricciones directamente desde el modelo
                 foreach (var restrictionElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "Restriction"))
                 {
                     var nodeID = restrictionElement.Attribute(rdf + "nodeID")?.Value;
@@ -225,7 +220,6 @@ namespace Json.Controllers
                         }
                         else
                         {
-                            // Si no hay ninguna cardinalidad definida
                             cardinality = "*";
                         }
                     }
@@ -239,7 +233,7 @@ namespace Json.Controllers
                         // Verificar si el dominio de la propiedad es una subclase o igual al nodeID
                         if ((allSubclasses.ContainsKey(nodeID) && allSubclasses[nodeID].Contains(property.Domain)) || property.Domain.Equals(nodeID))
                         {
-                            property.Cardinality = cardinality; // Asignar la cardinalidad
+                            property.Cardinality = cardinality;
                         }
                     }
                 }
@@ -293,7 +287,6 @@ namespace Json.Controllers
 
                 bool IsClass(string value)
                 {
-                    // Compara si el valor es una URI que corresponde a una clase (no es un tipo de datos)
                     return !value.StartsWith("http://www.w3.org/2001/XMLSchema#");
                 }
 

@@ -5,13 +5,19 @@ namespace Json.Models
 {
     public class OwlToJsonModel
     {
-        // Lista de clases en el modelo OWL
+        /// <summary>
+        /// Lista de clases en el modelo OWL
+        /// </summary>
         public List<OwlClass> Classes { get; set; } = new List<OwlClass>();
 
-        // Lista de propiedades en el modelo OWL
+        /// <summary>
+        /// Lista de propiedades en el modelo OWL
+        /// </summary>
         public List<OwlProperty> Properties { get; set; } = new List<OwlProperty>();
 
-        // Lista de relaciones entre los elementos en el modelo OWL
+        /// <summary>
+        /// Lista de relaciones entre los elementos en el modelo OWL
+        /// </summary>
         public List<OwlRelationship> Relationships { get; set; } = new List<OwlRelationship>();
     }
 

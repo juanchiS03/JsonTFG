@@ -6,7 +6,7 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 
 // Configurar la canalización de solicitudes HTTP.
-app.UseStaticFiles(); // Agrega esta línea para servir archivos estáticos
+app.UseStaticFiles();
 
 app.UseRouting();
 app.MapControllerRoute(

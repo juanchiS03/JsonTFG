@@ -63,18 +63,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         });
 
-        console.log(mermaidCode);
-
-
-
-
-
-
-        // Insertar el código Mermaid en el contenedor
         var mermaidContainer = document.getElementById("mermaid-container");
         mermaidContainer.innerHTML = `<pre class="mermaid">${mermaidCode}</pre>`;
 
-        // Renderizar el diagrama
         mermaid.contentLoaded();
     }
 });
