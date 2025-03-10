@@ -1,13 +1,13 @@
 ﻿@{
-    ViewData["Title"] = "Convert OWL to JSON";
+    ViewData["Title"] = "Generar UML a partir de OWL";
 }
 
 <h2>@ViewData["Title"]</h2>
 
 <form method="post" enctype="multipart/form-data" action="/OwlToJson/ConvertOwlToJson">
     <div class="form-group">
-        <label for="owlFile">Select OWL File</label>
+        <label for="owlFile">Seleccionar archivo OWL</label>
         <input type="file" name="owlFile" id="owlFile" class="form-control" />
     </div>
-    <button type="submit" class="btn btn-primary">Convert to JSON</button>
+    <button type="submit" class="btn btn-primary">Generar diagrama</button>
 </form>

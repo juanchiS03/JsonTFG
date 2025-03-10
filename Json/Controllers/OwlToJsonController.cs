@@ -24,9 +24,6 @@ namespace Json.Controllers
             // Convertir el modelo a JSON
             var json = JsonSerializer.Serialize(model, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
-            // Devolver el JSON
-            //return Content(json, "application/json");
-
             // Guardar el JSON en TempData
             TempData["jsonData"] = json;
 
@@ -46,7 +43,7 @@ namespace Json.Controllers
                 var xmlDocument = XDocument.Parse(owlContent);
 
                 // Extraer namespaces de xmlns: en <rdf:RDF>
-                foreach (var attr in xmlDocument.Root.Attributes().Where(a => a.IsNamespaceDeclaration)) 
+                foreach (var attr in xmlDocument.Root.Attributes().Where(a => a.IsNamespaceDeclaration))
                 {
                     var prefix = attr.Name.LocalName;
                     var uri = attr.Value;
