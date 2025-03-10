@@ -21,7 +21,7 @@ namespace Json.Controllers
         }
 
         [HttpPost]
-        public IActionResult ConvertOwlToJson(IFormFile owlFile)
+        public IActionResult Index(IFormFile owlFile)
         {
             if (owlFile == null || owlFile.Length == 0)
                 return BadRequest("No file uploaded.");
@@ -32,11 +32,14 @@ namespace Json.Controllers
             // Convertir el modelo a JSON
             var json = JsonSerializer.Serialize(mOwlToJsonModel, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
 
-            // Guardar el JSON en TempData
-            TempData["jsonData"] = json;
+            // Crear el modelo de vista
+            var model = new OwlViewModel
+            {
+                JsonData = json
+            };
 
-            // Redirigir a la vista para mostrar el diagrama
-            return RedirectToAction("VistaGraf", "Uml");
+            // Pasar el modelo a la vista
+            return View("VistaGraf", model);
         }
 
         private void ProcessOwlFile(IFormFile owlFile)
@@ -57,7 +60,7 @@ namespace Json.Controllers
                 buscarPropiedades(xmlDocument);
 
                 añadirRelaciones();
-               
+
             }
 
         }
@@ -163,7 +166,7 @@ namespace Json.Controllers
         }
 
 
-        public void buscarPropiedades(XDocument xmlDocument) 
+        public void buscarPropiedades(XDocument xmlDocument)
         {
             // Buscar Propiedades
             foreach (var propertyElement in xmlDocument.Descendants().Where(e => e.Name.LocalName == "DatatypeProperty" || e.Name.LocalName == "ObjectProperty" || e.Name.LocalName == "FunctionalProperty"))

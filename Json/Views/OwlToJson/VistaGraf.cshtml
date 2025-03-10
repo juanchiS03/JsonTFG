@@ -1,10 +1,9 @@
-﻿@*
-    
-*@
-@{
-		@ViewData["Title"]
-		var jsonData = ViewBag.JsonData;
+﻿@{
+    @ViewData["Title"]
+    var jsonData = ViewBag.JsonData;
 }
+
+@model OwlViewModel
 
 <!DOCTYPE html>
 <html lang="es">
@@ -23,7 +22,7 @@
     <div id="mermaid-container"></div>
 
     <script>
-        var jsonData = @Html.Raw(jsonData);
+        var jsonData = @Html.Raw(Model.JsonData);
     </script>
 
 </body>
